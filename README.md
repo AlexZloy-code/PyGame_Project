@@ -1,2 +1,2 @@
 # PyGame_Project
-Игра Monorgams
+Игра Nonorgams
