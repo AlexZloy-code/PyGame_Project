@@ -130,12 +130,8 @@ class Profile(Window):
             screen.blit(rules, (145, 100))
 
             font = pygame.font.Font(None, 50)
-            rules = font.render('Войти в акаунт', True, (0, 0, 0))
-            screen.blit(rules, (220, 420))
-
-            font = pygame.font.Font(None, 50)
             rules = font.render('Авторизироваться', True, (0, 0, 0))
-            screen.blit(rules, (170, 500))
+            screen.blit(rules, (180, 500))
         
         all_sprites.draw(screen)
         pygame.display.flip()
@@ -146,7 +142,7 @@ class Profile(Window):
             window = Main()
             pygame.display.set_caption('Главная')
             window.draw_window()
-        elif 240 < x < 480 and 450 < y < 540 and not user.name:
+        elif 180 < x < 490 and 500 < y < 540 and not user.name:
             class reg(QWidget):
                 def __init__(self):
                     super().__init__()
@@ -169,12 +165,20 @@ class Profile(Window):
                                 sucsess.setText("Вы зарегистрировались")
                                 sucsess.setIcon(QMessageBox.Icon.Information)
                                 sucsess.setStandardButtons(
-                                    QMessageBox.StandardButton.Ok | QMessageBox.StandardButton.Cancel
+                                    QMessageBox.StandardButton.Ok
                                 )
                                 sucsess.exec()
                                 user.set_info(name, 0, max(id_acc) + 1, 'static/icons/Base.png')
                             else:
-                                user.set_info(res[1], res[3], res[4])
+                                sucsess = QMessageBox()
+                                sucsess.setWindowTitle("Успешно")
+                                sucsess.setText(f"Вы вошли в аккаунт {name}")
+                                sucsess.setIcon(QMessageBox.Icon.Information)
+                                sucsess.setStandardButtons(
+                                    QMessageBox.StandardButton.Ok
+                                )
+                                sucsess.exec()
+                                user.set_info(res[0][1], res[0][3], res[0][0], res[0][4])
 
             app = QApplication(sys.argv)
             ex = reg()
@@ -235,7 +239,7 @@ def load_image(name):
 
 
 def procent_ot_count(count):
-    return 100
+    return '?'
 
 
 if __name__ == '__main__':
