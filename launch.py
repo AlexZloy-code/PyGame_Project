@@ -13,12 +13,6 @@ class User:
         self.id = id
         self.url_icon = url_icon
 
-    def __call__(self):
-        if self.name:
-            print(f'User_id: {self.id}\nUser_name: {self.name}\nUser_count: {self.count}')
-        else:
-            print('Данных о пользователе нету')
-
 
 class Main(Window):
     def draw_window(self):
@@ -94,14 +88,9 @@ class Profile(Window):
     def draw_window(self):
         screen.fill((153, 153, 255))
 
+        home()
+
         all_sprites = pygame.sprite.Group()
-        home = pygame.sprite.Sprite()
-        home.image = pygame.transform.scale(pygame.image.load('static/image/home.png'), (50, 50))
-        home.rect = home.image.get_rect()
-        home.rect.x = 20
-        home.rect.y = 20
-        all_sprites.add(home)
-        
 
         if user.name:
             font = pygame.font.Font(None, 50)
@@ -122,7 +111,7 @@ class Profile(Window):
 
             font = pygame.font.Font(None, 30)
             rules = font.render(f'Вы решили больше Nonogram, чем {procent_ot_count(user.count)}% людей', True, (0, 0, 0))
-            screen.blit(rules, (110, 500))
+            screen.blit(rules, (120, 500))
 
         else:
             font = pygame.font.Font(None, 50)
@@ -131,7 +120,7 @@ class Profile(Window):
 
             font = pygame.font.Font(None, 50)
             rules = font.render('Авторизироваться', True, (0, 0, 0))
-            screen.blit(rules, (180, 500))
+            screen.blit(rules, (190, 500))
         
         all_sprites.draw(screen)
         pygame.display.flip()
@@ -142,7 +131,7 @@ class Profile(Window):
             window = Main()
             pygame.display.set_caption('Главная')
             window.draw_window()
-        elif 180 < x < 490 and 500 < y < 540 and not user.name:
+        elif 190 < x < 500 and 500 < y < 540 and not user.name:
             class reg(QWidget):
                 def __init__(self):
                     super().__init__()
@@ -179,7 +168,6 @@ class Profile(Window):
                                 )
                                 sucsess.exec()
                                 user.set_info(res[0][1], res[0][3], res[0][0], res[0][4])
-
             app = QApplication(sys.argv)
             ex = reg()
             ex.show()
@@ -190,14 +178,7 @@ class Games(Window):
     def draw_window(self):
         screen.fill((153, 153, 255))
 
-        all_sprites = pygame.sprite.Group()
-        home = pygame.sprite.Sprite()
-        home.image = pygame.transform.scale(pygame.image.load('static/image/home.png'), (50, 50))
-        home.rect = home.image.get_rect()
-        home.rect.x = 20
-        home.rect.y = 20
-        all_sprites.add(home)
-        all_sprites.draw(screen)
+        home()
         
         pygame.display.flip()
 
@@ -210,19 +191,72 @@ class Games(Window):
 
 
 class Rules(Window):
+    paper = 1
+
     def draw_window(self):
         screen.fill((153, 153, 255))
 
+        home()
+
         all_sprites = pygame.sprite.Group()
-        home = pygame.sprite.Sprite()
-        home.image = pygame.transform.scale(pygame.image.load('static/image/home.png'), (50, 50))
-        home.rect = home.image.get_rect()
-        home.rect.x = 20
-        home.rect.y = 20
-        all_sprites.add(home)
-        all_sprites.draw(screen)
         
+        texts = [
+            [33, 'Nonograms - это логические головоломки изображения,', (10, 200)],
+            [33, 'в которых ячейки в сетке должны быть окрашены',(10, 240)],
+            [33, 'или оставлены пустыми в соответствии с числами,', (10, 280)],
+            [33, 'указанными сбоку сетки, чтобы показать скрытую картинку. ',  (10, 320)],
+            [31, 'В этом типе головоломки числа измеряют количество', (10, 400)],
+            [31, 'непрерывных линий закрашенных квадратов в каждой', (10, 440)],
+            [31, 'строке или столбце.', (10, 480)]
+        ]
+
+        for elems in texts:
+            blit_text(*elems)
+
+        next = pygame.sprite.Sprite()
+        next.image = pygame.transform.scale(pygame.image.load('static/image/next.png'), (50, 50))
+        next.rect = next.image.get_rect()
+        next.rect.x = 620
+        next.rect.y = 620
+        all_sprites.add(next)
+
+        all_sprites.draw(screen)
+
         pygame.display.flip()
+
+    def draw_window1(self, image):
+        screen.fill((153, 153, 255))
+
+        home()
+        
+        all_sprites = pygame.sprite.Group()
+        
+        font = pygame.font.Font(None, 50)
+        title_1 = font.render('Например', True, (0, 0, 0))
+        screen.blit(title_1, (250, 90))
+        
+        primer = pygame.sprite.Sprite()
+        primer.image = pygame.transform.scale(pygame.image.load(image), (400, 400))
+        primer.rect = primer.image.get_rect()
+        primer.rect.x = 150
+        primer.rect.y = 150
+        all_sprites.add(primer)
+
+        next = pygame.sprite.Sprite()
+        next.image = pygame.transform.scale(pygame.image.load('static/image/next.png'), (50, 50))
+        next.rect = next.image.get_rect()
+        next.rect.x = 620
+        next.rect.y = 620
+        all_sprites.add(next)
+
+        all_sprites.draw(screen)
+
+        pygame.display.flip()
+    
+    def draw_window2(self):
+        screen.fill((153, 153, 255))
+
+        home()
 
     def open_new_window(self):
         global window
@@ -230,7 +264,12 @@ class Rules(Window):
             window = Main()
             pygame.display.set_caption('Главная')
             window.draw_window()
-
+        if 620 < x < 670 and 620 < y < 670:
+            if self.paper < 8:
+                window.draw_window1([f'static/image/primer/{i}.png' for i in range(8)][self.paper])
+                self.paper += 1
+            else:
+                window.draw_window2()
 
 def load_image(name):
     fullname = os.path.join('static/image', name)
@@ -240,6 +279,23 @@ def load_image(name):
 
 def procent_ot_count(count):
     return '?'
+
+
+def blit_text(size, text, coords):
+    font = pygame.font.Font(None, size)
+    rules = font.render(text, True, (0, 0, 0))
+    screen.blit(rules, coords)
+
+
+def home():
+    all_sprites = pygame.sprite.Group()
+    home = pygame.sprite.Sprite()
+    home.image = pygame.transform.scale(pygame.image.load('static/image/home.png'), (50, 50))
+    home.rect = home.image.get_rect()
+    home.rect.x = 20
+    home.rect.y = 20
+    all_sprites.add(home)
+    all_sprites.draw(screen)
 
 
 if __name__ == '__main__':
@@ -272,12 +328,11 @@ if __name__ == '__main__':
     window = Main()
     window.draw_window()
     
-    running = True
-    while running:
+    while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                running = False
+                pygame.quit()
+                quit()
             if event.type == pygame.MOUSEBUTTONDOWN:
                 x, y = window.get_coord(event.pos)
                 window.open_new_window()
-    pygame.quit()
