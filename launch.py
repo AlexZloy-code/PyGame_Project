@@ -19,27 +19,31 @@ class Main(Window):
         screen.fill((153, 153, 255))
 
         all_sprites = pygame.sprite.Group()
-        
+
         exit = pygame.sprite.Sprite()
         exit.image = pygame.transform.scale(pygame.image.load('static/image/exit.png'), (50, 50))
         exit.rect = exit.image.get_rect()
         exit.rect.x = 10
         exit.rect.y = 20
+        all_sprites.add(exit)
 
         profile = pygame.sprite.Sprite()
         profile.image = pygame.transform.scale(pygame.image.load('static/image/profile.png'), (50, 50))
         profile.rect = profile.image.get_rect()
         profile.rect.x = 70
         profile.rect.y = 20
-
-        all_sprites.add(exit)
         all_sprites.add(profile)
-        
+
         all_sprites.draw(screen)
 
-        font = pygame.font.Font(None, 50)
-        title_1 = font.render('Приветствую в игре', True, (0, 0, 0))
-        screen.blit(title_1, (180, 90))
+        texts = [
+            [50, 'Приветствую в игре', (180, 90)],
+            [50, 'Играть', (290, 400)],
+            [50, 'Правила игры', (230, 500)]
+        ]
+
+        for elems in texts:
+            blit_text(*elems)
 
         try:
             all_sprites = pygame.sprite.Group()
@@ -54,15 +58,7 @@ class Main(Window):
             font = pygame.font.Font(None, 50)
             title_2 = font.render('Nonogram', True, (255, 255, 255))
             screen.blit(title_2, (250, 150))
-        
-        font = pygame.font.Font(None, 50)
-        games = font.render('Играть', True, (0, 0, 0))
-        screen.blit(games, (290, 400))
 
-        font = pygame.font.Font(None, 50)
-        rules = font.render('Правила игры', True, (0, 0, 0))
-        screen.blit(rules, (230, 500))
-        
         pygame.display.flip()
 
     def open_new_window(self):
@@ -93,9 +89,15 @@ class Profile(Window):
         all_sprites = pygame.sprite.Group()
 
         if user.name:
-            font = pygame.font.Font(None, 50)
-            rules = font.render(user.name, True, (0, 0, 0))
-            screen.blit(rules, (290, 100))
+            level_form = 'уровней' if user.count > 4 or user.count == 0 else 'уровня' if user.count > 1 else 'уровень'
+            texts = [
+                [50, user.name, (290, 100)],
+                [30, f'Вы решили {user.count} {level_form}', (240, 420)],
+                [30, f'Вы решили больше Nonogram, чем {rating(user.count)}% людей', (120, 500)]
+            ]
+
+            for elems in texts:
+                blit_text(*elems)
 
             icon = pygame.sprite.Sprite()
             icon.image = pygame.transform.scale(pygame.image.load(user.url_icon), (250, 250))
@@ -103,25 +105,15 @@ class Profile(Window):
             icon.rect.x = 220
             icon.rect.y = 150
             all_sprites.add(icon)
-
-            level_form = 'уровней' if user.count > 4 or user.count == 0 else 'уровня' if user.count > 1 else 'уровень'
-            font = pygame.font.Font(None, 30)
-            rules = font.render(f'Вы решили {user.count} {level_form}', True, (0, 0, 0))
-            screen.blit(rules, (240, 420))
-
-            font = pygame.font.Font(None, 30)
-            rules = font.render(f'Вы решили больше Nonogram, чем {procent_ot_count(user.count)}% людей', True, (0, 0, 0))
-            screen.blit(rules, (120, 500))
-
         else:
-            font = pygame.font.Font(None, 50)
-            rules = font.render('Вы не авторизированы', True, (0, 0, 0))
-            screen.blit(rules, (145, 100))
+            texts = [
+                [50, 'Вы не авторизированы', (145, 100)],
+                [50, 'Авторизироваться', (190, 500)]
+            ]
 
-            font = pygame.font.Font(None, 50)
-            rules = font.render('Авторизироваться', True, (0, 0, 0))
-            screen.blit(rules, (190, 500))
-        
+            for elems in texts:
+                blit_text(*elems)
+
         all_sprites.draw(screen)
         pygame.display.flip()
 
@@ -179,7 +171,7 @@ class Games(Window):
         screen.fill((153, 153, 255))
 
         home()
-        
+
         pygame.display.flip()
 
     def open_new_window(self):
@@ -199,10 +191,10 @@ class Rules(Window):
         home()
 
         all_sprites = pygame.sprite.Group()
-        
+
         texts = [
             [33, 'Nonograms - это логические головоломки изображения,', (10, 200)],
-            [33, 'в которых ячейки в сетке должны быть окрашены',(10, 240)],
+            [33, 'в которых ячейки в сетке должны быть окрашены', (10, 240)],
             [33, 'или оставлены пустыми в соответствии с числами,', (10, 280)],
             [33, 'указанными сбоку сетки, чтобы показать скрытую картинку. ',  (10, 320)],
             [31, 'В этом типе головоломки числа измеряют количество', (10, 400)],
@@ -228,13 +220,13 @@ class Rules(Window):
         screen.fill((153, 153, 255))
 
         home()
-        
+
         all_sprites = pygame.sprite.Group()
-        
+
         font = pygame.font.Font(None, 50)
         title_1 = font.render('Например', True, (0, 0, 0))
         screen.blit(title_1, (250, 90))
-        
+
         primer = pygame.sprite.Sprite()
         primer.image = pygame.transform.scale(pygame.image.load(image), (400, 400))
         primer.rect = primer.image.get_rect()
@@ -252,7 +244,7 @@ class Rules(Window):
         all_sprites.draw(screen)
 
         pygame.display.flip()
-    
+
     def draw_window2(self):
         screen.fill((153, 153, 255))
 
@@ -271,14 +263,18 @@ class Rules(Window):
             else:
                 window.draw_window2()
 
+
 def load_image(name):
     fullname = os.path.join('static/image', name)
     image = pygame.image.load(fullname)
     return image
 
 
-def procent_ot_count(count):
-    return '?'
+def rating(count):
+    con = sqlite3.connect('static/db/gamers.db')
+    cur = con.cursor()
+    res = cur.execute(f"""SELECT result FROM users""").fetchall()
+    return round(len([1 for i in res if i[0] < count]) / (len(res) - 1) * 100, 1)
 
 
 def blit_text(size, text, coords):
@@ -318,7 +314,7 @@ if __name__ == '__main__':
             url_icon      TEXT
         )
     ''')
- 
+
     pygame.init()
     size = width, height = 700, 700
     screen = pygame.display.set_mode(size)
@@ -327,7 +323,7 @@ if __name__ == '__main__':
 
     window = Main()
     window.draw_window()
-    
+
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
