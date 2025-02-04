@@ -18,23 +18,13 @@ class Main(Window):
     def draw_window(self):
         screen.fill((153, 153, 255))
 
-        all_sprites = pygame.sprite.Group()
-
-        exit = pygame.sprite.Sprite()
-        exit.image = pygame.transform.scale(pygame.image.load('static/image/exit.png'), (50, 50))
-        exit.rect = exit.image.get_rect()
-        exit.rect.x = 10
-        exit.rect.y = 20
-        all_sprites.add(exit)
-
-        profile = pygame.sprite.Sprite()
-        profile.image = pygame.transform.scale(pygame.image.load('static/image/profile.png'), (50, 50))
-        profile.rect = profile.image.get_rect()
-        profile.rect.x = 70
-        profile.rect.y = 20
-        all_sprites.add(profile)
-
-        all_sprites.draw(screen)
+        icons = [
+            ['static/image/exit.png', (50, 50), (10, 20)],
+            ['static/image/profile.png', (50, 50), (70, 20)]
+        ]
+        
+        for elems in icons:
+            blit_image(*elems)
 
         texts = [
             [50, 'Приветствую в игре', (180, 90)],
@@ -46,18 +36,9 @@ class Main(Window):
             blit_text(*elems)
 
         try:
-            all_sprites = pygame.sprite.Group()
-            title = pygame.sprite.Sprite()
-            title.image = pygame.transform.scale(pygame.image.load('static/image/Nonogram.png'), (400, 50))
-            title.rect = title.image.get_rect()
-            title.rect.x = 150
-            title.rect.y = 150
-            all_sprites.add(title)
-            all_sprites.draw(screen)
+            blit_image('static/image/Nonogram.png', (400, 50), (150, 150))
         except Exception:
-            font = pygame.font.Font(None, 50)
-            title_2 = font.render('Nonogram', True, (255, 255, 255))
-            screen.blit(title_2, (250, 150))
+            blit_text(50, 'Nonogram', (250, 150))
 
         pygame.display.flip()
 
@@ -86,8 +67,6 @@ class Profile(Window):
 
         home()
 
-        all_sprites = pygame.sprite.Group()
-
         if user.name:
             level_form = 'уровней' if user.count > 4 or user.count == 0 else 'уровня' if user.count > 1 else 'уровень'
             texts = [
@@ -99,12 +78,7 @@ class Profile(Window):
             for elems in texts:
                 blit_text(*elems)
 
-            icon = pygame.sprite.Sprite()
-            icon.image = pygame.transform.scale(pygame.image.load(user.url_icon), (250, 250))
-            icon.rect = icon.image.get_rect()
-            icon.rect.x = 220
-            icon.rect.y = 150
-            all_sprites.add(icon)
+            blit_image(user.url_icon, (250, 250), (220, 150))
         else:
             texts = [
                 [50, 'Вы не авторизированы', (145, 100)],
@@ -114,7 +88,6 @@ class Profile(Window):
             for elems in texts:
                 blit_text(*elems)
 
-        all_sprites.draw(screen)
         pygame.display.flip()
 
     def open_new_window(self):
@@ -167,19 +140,38 @@ class Profile(Window):
 
 
 class Games(Window):
-    def draw_window(self):
-        screen.fill((153, 153, 255))
+    def draw_window(self, x=-1, y=0):
+        if x == -1:
+            print(111)
+            self.otstup = 120
+            self.row_count, self.column_count = 7, 15
+            self.size_rect = (700 - self.otstup) // max(self.row_count, self.column_count)
+            self.mas = [[0 for _ in range(self.column_count)] for _ in range(self.row_count)]
+
+        screen.fill((255, 153, 153))
 
         home()
+        
+        coords = ((x - self.otstup) // self.size_rect, (y - self.otstup) // self.size_rect)
+        for x in range(self.column_count):
+            for y in range(self.row_count):
+                if coords[0] == x and coords[1] == y:
+                    self.mas[y][x] = 1 - self.mas[y][x]
+                if self.mas[y][x]:
+                    pygame.draw.rect(screen, (0, 0, 0), (self.otstup + x * self.size_rect, self.otstup + y * self.size_rect, self.size_rect, self.size_rect), self.size_rect)
+                
 
         pygame.display.flip()
 
     def open_new_window(self):
         global window
         if 20 < x < 70 and 20 < y < 70:
+            window.mas = []
             window = Main()
             pygame.display.set_caption('Главная')
             window.draw_window()
+        else:
+            self.draw_window(x, y)     
 
 
 class Rules(Window):
@@ -189,8 +181,6 @@ class Rules(Window):
         screen.fill((153, 153, 255))
 
         home()
-
-        all_sprites = pygame.sprite.Group()
 
         texts = [
             [33, 'Nonograms - это логические головоломки изображения,', (10, 200)],
@@ -205,14 +195,7 @@ class Rules(Window):
         for elems in texts:
             blit_text(*elems)
 
-        next = pygame.sprite.Sprite()
-        next.image = pygame.transform.scale(pygame.image.load('static/image/next.png'), (50, 50))
-        next.rect = next.image.get_rect()
-        next.rect.x = 620
-        next.rect.y = 620
-        all_sprites.add(next)
-
-        all_sprites.draw(screen)
+        blit_image('static/image/next.png', (50, 50), (620, 620))
 
         pygame.display.flip()
 
@@ -221,27 +204,15 @@ class Rules(Window):
 
         home()
 
-        all_sprites = pygame.sprite.Group()
+        blit_text(50, 'Например', (250, 90))
 
-        font = pygame.font.Font(None, 50)
-        title_1 = font.render('Например', True, (0, 0, 0))
-        screen.blit(title_1, (250, 90))
-
-        primer = pygame.sprite.Sprite()
-        primer.image = pygame.transform.scale(pygame.image.load(image), (400, 400))
-        primer.rect = primer.image.get_rect()
-        primer.rect.x = 150
-        primer.rect.y = 150
-        all_sprites.add(primer)
-
-        next = pygame.sprite.Sprite()
-        next.image = pygame.transform.scale(pygame.image.load('static/image/next.png'), (50, 50))
-        next.rect = next.image.get_rect()
-        next.rect.x = 620
-        next.rect.y = 620
-        all_sprites.add(next)
-
-        all_sprites.draw(screen)
+        icons = [
+            [image, (400, 400), (150, 150)],
+            ['static/image/next.png', (50, 50), (620, 620)]
+        ]
+        
+        for elems in icons:
+            blit_image(*elems)
 
         pygame.display.flip()
 
@@ -249,6 +220,11 @@ class Rules(Window):
         screen.fill((153, 153, 255))
 
         home()
+
+        blit_text(50, 'УРА!', (300, 90))
+        blit_text(40, 'Мы разобрали теорию игры', (170, 140))
+
+        pygame.display.flip()
 
     def open_new_window(self):
         global window
@@ -264,12 +240,6 @@ class Rules(Window):
                 window.draw_window2()
 
 
-def load_image(name):
-    fullname = os.path.join('static/image', name)
-    image = pygame.image.load(fullname)
-    return image
-
-
 def rating(count):
     con = sqlite3.connect('static/db/gamers.db')
     cur = con.cursor()
@@ -281,6 +251,18 @@ def blit_text(size, text, coords):
     font = pygame.font.Font(None, size)
     rules = font.render(text, True, (0, 0, 0))
     screen.blit(rules, coords)
+
+
+def blit_image(path, size, coords):
+    all_sprites = pygame.sprite.Group()
+
+    image = pygame.sprite.Sprite()
+    image.image = pygame.transform.scale(pygame.image.load(path), size)
+    image.rect = image.image.get_rect()
+    image.rect.x, image.rect.y = coords
+    all_sprites.add(image)
+
+    all_sprites.draw(screen)
 
 
 def home():
