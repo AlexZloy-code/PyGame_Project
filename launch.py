@@ -1,3 +1,11 @@
+import pygame
+import random
+import os
+from PyQt6.QtWidgets import QApplication, QWidget, QInputDialog, QMessageBox
+import sys
+import sqlite3
+
+
 class Window:
     def get_coord(self, mouse_pos):
         return mouse_pos[0], mouse_pos[1]
@@ -65,7 +73,7 @@ class Profile(Window):
     def draw_window(self):
         screen.fill((153, 153, 255))
 
-        home()
+        blit_image('static/image/home.png', (50, 50), (20, 20))
 
         if user.name:
             level_form = 'уровней' if user.count > 4 or user.count == 0 else 'уровня' if user.count > 1 else 'уровень'
@@ -140,38 +148,124 @@ class Profile(Window):
 
 
 class Games(Window):
-    def draw_window(self, x=-1, y=0):
+    def nums_to_lines(self, answer):
+
+        mas_for_return = []
+
+        for a in range(len(answer)):
+            nulls = [-1] + [i for i in range(len(answer[a])) if answer[a][i] != 1] + [len(answer[a])]
+            nums = [str(nulls[i + 1] - nulls[i] - 1) for i in range(len(nulls) - 1) if nulls[i + 1] - nulls[i] > 1]
+            mas_for_return.append(nums)
+        
+
+        answer = [[answer[i][j] for i in range(len(answer))] for j in range(len(answer[0]))]
+
+        for a in range(len(answer)):
+            nulls = [-1] + [i for i in range(len(answer[a])) if answer[a][i] != 1] + [len(answer[a])]
+            nums = [str(nulls[i + 1] - nulls[i] - 1) for i in range(len(nulls) - 1) if nulls[i + 1] - nulls[i] > 1]
+            mas_for_return.append(nums)
+        
+        return mas_for_return
+            
+
+    def draw_window(self, x=-1, y=0, touth=False):
+        global window
         if x == -1:
-            print(111)
+            from levels import random_level, levels
+            self.answer = levels[random_level()]
             self.otstup = 120
-            self.row_count, self.column_count = 7, 15
+            self.row_count, self.column_count = len(self.answer), len(self.answer[0])
             self.size_rect = (700 - self.otstup) // max(self.row_count, self.column_count)
             self.mas = [[0 for _ in range(self.column_count)] for _ in range(self.row_count)]
 
         screen.fill((255, 153, 153))
 
-        home()
+        for a in range(self.row_count):
+            nums = self.nums_to_lines(self.answer)[a]
+            blit_text(self.size_rect // 2, ' '.join(nums), (20, self.otstup + a * self.size_rect))
+
+
+        for a in range(self.row_count, self.row_count + self.column_count):
+            nums = self.nums_to_lines(self.answer)[a]
+            if len(nums) == 1:
+                blit_text(self.size_rect // 2, ' '.join(nums), (self.otstup + (a - self.row_count) * self.size_rect, 10))
+            elif len(nums) > 1:
+                for i in range(len(nums)):
+                    blit_text(self.size_rect // 3, nums[i], (self.otstup + (a - self.row_count) * self.size_rect, 10 + i * self.size_rect // 3))
+
+        blit_image('static/image/home.png', (50, 50), (20, 20))
         
         coords = ((x - self.otstup) // self.size_rect, (y - self.otstup) // self.size_rect)
+
         for x in range(self.column_count):
             for y in range(self.row_count):
-                if coords[0] == x and coords[1] == y:
+                rect_paint = (self.otstup + x * self.size_rect, self.otstup + y * self.size_rect, self.size_rect, self.size_rect)
+
+                if coords[0] == x and coords[1] == y and touth and self.mas[y][x] in (0, 1):
                     self.mas[y][x] = 1 - self.mas[y][x]
-                if self.mas[y][x]:
-                    pygame.draw.rect(screen, (0, 0, 0), (self.otstup + x * self.size_rect, self.otstup + y * self.size_rect, self.size_rect, self.size_rect), self.size_rect)
-                
+                elif coords[0] == x and coords[1] == y and not touth and self.mas[y][x] in (0, 2):
+                    self.mas[y][x] = 2 - self.mas[y][x]
+
+                if not 2 >= self.mas[y][x] >= 0:
+                    self.mas[y][x] = 0
+
+                if self.mas[y][x] == 1:
+                    pygame.draw.rect(screen, (0, 0, 0), rect_paint, self.size_rect)
+                elif self.mas[y][x] == 2:
+                    pygame.draw.line(screen, (0, 0, 0), (self.otstup + x * self.size_rect + 2,
+                                                         self.otstup + y * self.size_rect + 2),
+                                                        (self.otstup + x * self.size_rect + self.size_rect - 2,
+                                                         self.otstup + y * self.size_rect + self.size_rect - 2), 5)
+                    pygame.draw.line(screen, (0, 0, 0), (self.otstup + x * self.size_rect + self.size_rect - 2,
+                                                         self.otstup + y * self.size_rect + 2),
+                                                        (self.otstup + x * self.size_rect + 2,
+                                                         self.otstup + y * self.size_rect + self.size_rect - 2), 5)
+                    pygame.draw.rect(screen, (0, 0, 0), rect_paint, 1)
+                else:
+                    pygame.draw.rect(screen, (0, 0, 0), rect_paint, 1)
 
         pygame.display.flip()
 
-    def open_new_window(self):
+        if self.nums_to_lines(self.answer) == self.nums_to_lines(self.mas):
+            class win(QWidget):
+                def __init__(self):
+                    super().__init__()
+                    
+                    sucsess = QMessageBox()
+                    sucsess.setWindowTitle("Победа")
+                    sucsess.setText(f"Вы решили этот уровень")
+                    sucsess.setIcon(QMessageBox.Icon.Information)
+                    sucsess.setStandardButtons(
+                        QMessageBox.StandardButton.Ok
+                    )
+                    sucsess.exec()
+            app = QApplication(sys.argv)
+            ex = win()
+            ex.show()
+
+            if user.name:
+                user.count += 1
+
+                con = sqlite3.connect('static/db/gamers.db')
+                cur = con.cursor()
+                res = cur.execute(f"""SELECT password FROM users
+                                      WHERE userid == {user.id}""").fetchall()
+                cur.execute(f"""UPDATE users SET result = {user.count}
+                                WHERE userid = '{user.id}'""").fetchall()
+                con.commit()
+
+            window = Main()
+            pygame.display.set_caption('Главная')
+            window.draw_window()
+
+    def open_new_window(self, touth):
         global window
         if 20 < x < 70 and 20 < y < 70:
-            window.mas = []
             window = Main()
             pygame.display.set_caption('Главная')
             window.draw_window()
         else:
-            self.draw_window(x, y)     
+            self.draw_window(x, y, touth)     
 
 
 class Rules(Window):
@@ -180,7 +274,7 @@ class Rules(Window):
     def draw_window(self):
         screen.fill((153, 153, 255))
 
-        home()
+        blit_image('static/image/home.png', (50, 50), (20, 20))
 
         texts = [
             [33, 'Nonograms - это логические головоломки изображения,', (10, 200)],
@@ -202,7 +296,7 @@ class Rules(Window):
     def draw_window1(self, image):
         screen.fill((153, 153, 255))
 
-        home()
+        blit_image('static/image/home.png', (50, 50), (20, 20))
 
         blit_text(50, 'Например', (250, 90))
 
@@ -219,7 +313,7 @@ class Rules(Window):
     def draw_window2(self):
         screen.fill((153, 153, 255))
 
-        home()
+        blit_image('static/image/home.png', (50, 50), (20, 20))
 
         blit_text(50, 'УРА!', (300, 90))
         blit_text(40, 'Мы разобрали теорию игры', (170, 140))
@@ -265,23 +359,8 @@ def blit_image(path, size, coords):
     all_sprites.draw(screen)
 
 
-def home():
-    all_sprites = pygame.sprite.Group()
-    home = pygame.sprite.Sprite()
-    home.image = pygame.transform.scale(pygame.image.load('static/image/home.png'), (50, 50))
-    home.rect = home.image.get_rect()
-    home.rect.x = 20
-    home.rect.y = 20
-    all_sprites.add(home)
-    all_sprites.draw(screen)
-
-
 if __name__ == '__main__':
-    import pygame
-    import os
-    from PyQt6.QtWidgets import QApplication, QWidget, QInputDialog, QMessageBox
-    import sys
-    import sqlite3
+    
 
     user = User()
 
@@ -313,4 +392,10 @@ if __name__ == '__main__':
                 quit()
             if event.type == pygame.MOUSEBUTTONDOWN:
                 x, y = window.get_coord(event.pos)
-                window.open_new_window()
+                if window.__class__.__name__ == 'Games':
+                    if event.button == 1:
+                        window.open_new_window(touth=True)
+                    elif event.button == 3:
+                        window.open_new_window(touth=False)
+                else:
+                    window.open_new_window()
