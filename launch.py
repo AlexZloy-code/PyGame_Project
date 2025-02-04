@@ -1,7 +1,7 @@
 import pygame
-import random
 import os
-from PyQt6.QtWidgets import QApplication, QWidget, QInputDialog, QMessageBox
+import shutil
+from PyQt6.QtWidgets import QApplication, QWidget, QInputDialog, QMessageBox, QFileDialog
 import sys
 import sqlite3
 
@@ -76,6 +76,9 @@ class Profile(Window):
         blit_image('static/image/home.png', (50, 50), (20, 20))
 
         if user.name:
+
+            blit_image('static/image/change_profile.png', (50, 50), (90, 20))
+
             level_form = 'уровней' if user.count > 4 or user.count == 0 else 'уровня' if user.count > 1 else 'уровень'
             texts = [
                 [50, user.name, (290, 100)],
@@ -103,6 +106,33 @@ class Profile(Window):
         if 20 < x < 70 and 20 < y < 70:
             window = Main()
             pygame.display.set_caption('Главная')
+            window.draw_window()
+        elif 90 < x < 140 and 20 < y < 70:
+            class reg(QWidget):
+                def __init__(self):
+                    super().__init__()
+                    picture_name = QFileDialog.getOpenFileName(self, 'Выберите файл:', '', '*.jpg *.png *.bmp')[0]
+                    try:
+                        shutil.copy(picture_name, f'{os.path.dirname(os.path.abspath(__file__))}\static\icons')
+                    except Exception:
+                        pass
+                    con = sqlite3.connect('static/db/gamers.db')
+                    cur = con.cursor()  # поиск аккаунта
+                    cur.execute(f"""UPDATE users SET url_icon = 'static/icons/{picture_name.split("/")[-1]}'
+                                    WHERE userid = {user.id}""").fetchall()
+                    con.commit()
+                    user.set_info(user.name, user.count, user.id, f'static/icons/{picture_name.split("/")[-1]}')
+                    sucsess = QMessageBox()
+                    sucsess.setWindowTitle("Успешно")
+                    sucsess.setText(f"Вы изменили фото профиля")
+                    sucsess.setIcon(QMessageBox.Icon.Information)
+                    sucsess.setStandardButtons(
+                        QMessageBox.StandardButton.Ok
+                    )
+                    sucsess.exec()
+            app = QApplication(sys.argv)
+            ex = reg()
+            ex.show()
             window.draw_window()
         elif 190 < x < 500 and 500 < y < 540 and not user.name:
             class reg(QWidget):
